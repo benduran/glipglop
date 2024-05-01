@@ -12,11 +12,20 @@ var downloadCmd = &cobra.Command{
 	Short: "Downloads all of the tools you have specified for your project",
 	Use:   "download",
 	Run: func(cmd *cobra.Command, args []string) {
+		cwd, _ := rootCmd.Flags().GetString("cwd")
 		fmt.Println("Downloading all of your tools now...")
-		_, err := schema.ReadUserSchema()
+		schema, err := schema.ReadUserSchema(cwd)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
+		}
+
+		for key, val := range schema.Tools {
+			if key == "node" {
+
+			} else {
+				fmt.Printf("%s not downloading because it is not currently supported\n", val)
+			}
 		}
 	},
 }

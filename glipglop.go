@@ -5,7 +5,5 @@ import (
 )
 
 func main() {
-	// args := os.Args[1:]
-	// fmt.Println(args)
 	cmd.SetupCLI()
 }

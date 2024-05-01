@@ -1,6 +1,7 @@
 package schema
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -8,27 +9,20 @@ import (
 )
 
 type GlipGlopManifest struct {
-	Tools []string `json:"tools"`
+	Tools map[string]string `json:"tools"`
 }
 
-func ReadUserSchema() (*GlipGlopManifest, error) {
+func ReadUserSchema(cwd string) (*GlipGlopManifest, error) {
 	// walk up to the nearest schema and use that.
 	// if it doesn't exist, return an error
-	cwd, err := os.Getwd()
 
-	if err != nil {
-		return nil, err
-	}
-
-	currPath := cwd
-
-	splitPath := strings.Split(currPath, string(os.PathSeparator))
+	splitPath := strings.Split(cwd, string(os.PathSeparator))
 
 	scannedPaths := []string{}
 
 	for i := len(splitPath); i >= 0; i-- {
 		segment := strings.Join(splitPath[0:i], string(os.PathSeparator))
-		segmentWithGlipglop := filepath.Join(segment, "glipglop.json")
+		segmentWithGlipglop := filepath.Join(segment, ".glipglop.json")
 
 		if string(segmentWithGlipglop[0]) != string(os.PathSeparator) {
 			segmentWithGlipglop = fmt.Sprintf("/%s", segmentWithGlipglop)
@@ -44,6 +38,20 @@ func ReadUserSchema() (*GlipGlopManifest, error) {
 			continue
 		}
 		// if we got here, the file exists, so we should return it
+		var schema GlipGlopManifest
+
+		fileContents, err := os.ReadFile(segmentWithGlipglop)
+		if err != nil {
+			return nil, err
+		}
+
+		err = json.Unmarshal(fileContents, &schema)
+
+		if err != nil {
+			return nil, err
+		}
+
+		return &schema, nil
 	}
 
 	// TODO: this EOL character is not portable or friendly for Windows,
