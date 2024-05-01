@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
-	"os"
+	"github.com/benduran/glipglop/cmd"
 )
 
 func main() {
-	args := os.Args[1:]
-	fmt.Println(args)
+	// args := os.Args[1:]
+	// fmt.Println(args)
+	cmd.SetupCLI()
 }
