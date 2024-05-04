@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/benduran/glipglop/downloader"
 	"github.com/benduran/glipglop/schema"
 	"github.com/spf13/cobra"
 )
@@ -15,17 +16,14 @@ var downloadCmd = &cobra.Command{
 		cwd, _ := rootCmd.Flags().GetString("cwd")
 		fmt.Println("Downloading all of your tools now...")
 		schema, err := schema.ReadUserSchema(cwd)
+
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
 
 		for key, val := range schema.Tools {
-			if key == "node" {
-
-			} else {
-				fmt.Printf("%s not downloading because it is not currently supported\n", val)
-			}
+			downloader.DownloadTool(key, val)
 		}
 	},
 }
