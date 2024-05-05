@@ -30,7 +30,15 @@ func DownloadNode(version string) (string, error) {
 		ext = ".tar.gz"
 	}
 
-	filename := fmt.Sprintf("node-v%s-%s-%s%s", version, machineInfo.OS, machineInfo.Arch, ext)
+	arch := ""
+
+	if machineInfo.Arch == "amd64" {
+		arch = "x64"
+	} else {
+		arch = "arm64"
+	}
+
+	filename := fmt.Sprintf("node-v%s-%s-%s%s", version, machineInfo.OS, arch, ext)
 
 	urlToDownload := fmt.Sprintf("https://nodejs.org/dist/v%s/%s", version, filename)
 

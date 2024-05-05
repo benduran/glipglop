@@ -20,7 +20,10 @@ var downloadCmd = &cobra.Command{
 		}
 
 		for key, val := range schema.Tools {
-			downloader.DownloadTool(key, val)
+			_, err := downloader.DownloadTool(key, val)
+			if err != nil {
+				logger.Error(err)
+			}
 		}
 	},
 }
