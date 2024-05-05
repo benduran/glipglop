@@ -1,10 +1,8 @@
 package cmd
 
 import (
-	"fmt"
-	"os"
-
 	"github.com/benduran/glipglop/downloader"
+	logger "github.com/benduran/glipglop/log"
 	"github.com/benduran/glipglop/schema"
 	"github.com/spf13/cobra"
 )
@@ -14,12 +12,11 @@ var downloadCmd = &cobra.Command{
 	Use:   "download",
 	Run: func(cmd *cobra.Command, args []string) {
 		cwd, _ := rootCmd.Flags().GetString("cwd")
-		fmt.Println("Downloading all of your tools now...")
+		logger.Info("Downloading all of your tools now...")
 		schema, err := schema.ReadUserSchema(cwd)
 
 		if err != nil {
-			fmt.Println(err)
-			os.Exit(1)
+			logger.Error(err)
 		}
 
 		for key, val := range schema.Tools {

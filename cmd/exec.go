@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 
+	logger "github.com/benduran/glipglop/log"
 	"github.com/spf13/cobra"
 )
 
@@ -15,7 +16,7 @@ against your project's specific language or tool requirement? Use exec`,
 	Run: func(cmd *cobra.Command, args []string) {
 		tool := args[0]
 		argsForTool := args[1:]
-		fmt.Printf("Executing a command %s with args %s", tool, argsForTool)
+		logger.Info(fmt.Sprintf("Executing a command %s with args %s", tool, argsForTool))
 	},
 }
 

@@ -1,10 +1,10 @@
 package cmd
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 
+	logger "github.com/benduran/glipglop/log"
 	"github.com/spf13/cobra"
 )
 
@@ -32,14 +32,12 @@ Glipglop brings this all under a single roof and allows you to use them with eas
 func SetupCLI() {
 	cwd, err := os.Getwd()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		logger.Error(err)
 	}
 
 	rootCmd.PersistentFlags().String("cwd", cwd, "--cwd <path/to/dir>")
 
 	if err := rootCmd.Execute(); err != nil {
-		fmt.Fprintln(os.Stderr, err)
-		os.Exit(1)
+		logger.Error(err)
 	}
 }
