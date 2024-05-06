@@ -22,11 +22,12 @@ func DownloadNode(version string) (string, error) {
 
 	ext := ""
 
-	if machineInfo.OS == "windows" {
+	switch machineInfo.OS {
+	case "windows":
 		ext = ".zip"
-	} else if machineInfo.OS == "darwin" {
+	case "darwin":
 		ext = ".tar.xz"
-	} else {
+	default:
 		ext = ".tar.gz"
 	}
 
@@ -42,5 +43,18 @@ func DownloadNode(version string) (string, error) {
 
 	urlToDownload := fmt.Sprintf("https://nodejs.org/dist/v%s/%s", version, filename)
 
-	return internal.DownloadFileFromURL(urlToDownload)
+	downloadPath, err := internal.DownloadFileFromURL(urlToDownload)
+
+	if err != nil {
+		return "", err
+	}
+
+	// now we need to extract the archive
+	extractedPath, err := internal.ExtractArchive(downloadPath)
+
+	if err != nil {
+		return "", err
+	}
+
+	return extractedPath, nil
 }

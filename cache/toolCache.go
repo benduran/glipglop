@@ -22,6 +22,7 @@ func GetToolCacheLocation() (string, error) {
 	return cacheLocation, nil
 }
 
+// Gets glipglop's download location
 func GetDownloadCacheLocation() (string, error) {
 	homedir, err := os.UserHomeDir()
 	if err != nil {
@@ -35,4 +36,20 @@ func GetDownloadCacheLocation() (string, error) {
 	}
 
 	return downloadsLocation, nil
+}
+
+// Gets glipgops's extracted forlder location
+func GetExtractedCacheLocation() (string, error) {
+	homedir, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	extractedLocation := filepath.Join(homedir, ".glipglop", "extracted")
+
+	// ensure this directory is created
+	if err := os.MkdirAll(extractedLocation, os.ModePerm); err != nil {
+		return "", err
+	}
+
+	return extractedLocation, nil
 }

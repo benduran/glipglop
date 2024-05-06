@@ -8,19 +8,21 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/benduran/glipglop/cache"
+	logger "github.com/benduran/glipglop/log"
 )
 
 // extracts an arbitrary archive to a folder on disk
 func ExtractArchive(archivePath string) (string, error) {
+	logger.Info(fmt.Sprintf("Extracting %s", archivePath))
 	// Check if the archive path exists
 	_, err := os.Stat(archivePath)
 	if os.IsNotExist(err) {
 		return "", fmt.Errorf("archive file %s does not exist", archivePath)
 	}
 
-	// Create a temporary directory to extract the archive
-	// extractDir, err := ioutil.TempDir("", "extracted")
-	extractDir, err := os.MkdirTemp(".glipglop", "")
+	extractDir, err := cache.GetExtractedCacheLocation()
 	if err != nil {
 		return "", err
 	}
@@ -45,6 +47,8 @@ func ExtractArchive(archivePath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	logger.Info(fmt.Sprintf("Successfully extracted %s to %s", archivePath, extractDir))
 
 	return extractDir, nil
 }
