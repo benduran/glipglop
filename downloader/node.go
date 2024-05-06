@@ -2,8 +2,11 @@ package downloader
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/benduran/glipglop/internal"
+	logger "github.com/benduran/glipglop/log"
 )
 
 // Downloads the Node.js version
@@ -21,10 +24,12 @@ func DownloadNode(version string) (string, error) {
 	}
 
 	ext := ""
+	nodeBinaryExt := ""
 
 	switch machineInfo.OS {
 	case "windows":
 		ext = ".zip"
+		nodeBinaryExt = ".exe"
 	case "darwin":
 		ext = ".tar.xz"
 	default:
@@ -56,5 +61,26 @@ func DownloadNode(version string) (string, error) {
 		return "", err
 	}
 
-	return extractedPath, nil
+	// find the node binary
+	nodeGlob := filepath.Join(extractedPath, "**", fmt.Sprintf("node%s", nodeBinaryExt))
+	logger.Info(fmt.Sprintf("scanning for node binary with the following glob path: %s", nodeGlob))
+	matches, err := filepath.Glob(nodeGlob)
+
+	if err != nil {
+		return "", err
+	}
+
+	if len(matches) == 0 {
+		return "", fmt.Errorf("no matching node binary was found in %s", extractedPath)
+	}
+
+	nodeBinary := matches[0]
+
+	logger.Info(fmt.Sprintf("Found the node binary to be %s", nodeBinary))
+	logger.Info("Updating its execution permissions...")
+	if err = os.Chmod(nodeBinary, 0644); err != nil {
+		return "", err
+	}
+
+	return nodeBinary, nil
 }

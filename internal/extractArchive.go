@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"regexp"
 
 	"github.com/benduran/glipglop/cache"
 	logger "github.com/benduran/glipglop/log"
@@ -28,29 +29,34 @@ func ExtractArchive(archivePath string) (string, error) {
 	}
 
 	// Determine the archive type based on the file extension
-	ext := filepath.Ext(archivePath)
+	endsWithTar, _ := regexp.Compile(`\.(tar)(\.(gz|xz))$`)
+	endsWithZip, _ := regexp.Compile(`\.zip$`)
 
-	switch ext {
-	case ".tar":
-		err = extractTar(archivePath, extractDir)
-	case ".tar.gz":
-		err = extractTarGz(archivePath, extractDir)
-	case ".tar.xz":
-		// Add support for .tar.xz here if needed
-		err = fmt.Errorf("extracting .tar.xz archives is not supported yet")
-	case ".zip":
+	isTar := endsWithTar.MatchString(archivePath)
+	isZip := endsWithZip.MatchString(archivePath)
+
+	if isTar {
+		if filepath.Ext(archivePath) == ".gz" {
+			err = extractTarGz(archivePath, extractDir)
+		} else {
+			err = extractTar(archivePath, extractDir)
+		}
+	} else if isZip {
 		err = extractZip(archivePath, extractDir)
-	default:
-		err = fmt.Errorf("unsupported archive format: %s", ext)
+	} else {
+		return "", fmt.Errorf("unable to extract %s because it is neither a tar nor a zip archive", archivePath)
 	}
 
 	if err != nil {
 		return "", err
 	}
 
+	sansExt := endsWithTar.ReplaceAllString(filepath.Base(archivePath), "")
+	sansExt = endsWithZip.ReplaceAllString(sansExt, "")
+
 	logger.Info(fmt.Sprintf("Successfully extracted %s to %s", archivePath, extractDir))
 
-	return extractDir, nil
+	return filepath.Join(extractDir, sansExt), nil
 }
 
 func extractTar(archivePath, targetPath string) error {

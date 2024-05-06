@@ -60,7 +60,7 @@ func DownloadFileFromURL(url string) (string, error) {
 		return "", err
 	}
 
-	logger.Info(fmt.Sprintf("Downloaded %s", url))
+	logger.Info(fmt.Sprintf("Downloaded %s to %s", url, downloadPath))
 
 	return downloadPath, nil
 }
