@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	logger "github.com/benduran/glipglop/log"
+	"github.com/benduran/glipglop/schema"
 )
 
 // Downloads a specific tool
@@ -18,4 +19,23 @@ func DownloadTool(tool string, version string) (string, error) {
 		logger.Error(err)
 		return "", err
 	}
+}
+
+// downloads all of the tools in the user's glipglop manifest
+func DownloadAllTools(cwd string) error {
+	logger.Info("Downloading all of your tools now...")
+	schema, err := schema.ReadUserSchema(cwd)
+
+	if err != nil {
+		return err
+	}
+
+	for key, val := range schema.Tools {
+		_, err := DownloadTool(key, val)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

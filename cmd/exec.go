@@ -2,7 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"os/exec"
 
+	"github.com/benduran/glipglop/cache"
+	"github.com/benduran/glipglop/downloader"
 	logger "github.com/benduran/glipglop/log"
 	"github.com/spf13/cobra"
 )
@@ -17,6 +20,18 @@ against your project's specific language or tool requirement? Use exec`,
 		tool := args[0]
 		argsForTool := args[1:]
 		logger.Info(fmt.Sprintf("Executing a command %s with args %s", tool, argsForTool))
+		cwd, _ := rootCmd.Flags().GetString("cwd")
+
+		// check if the tool the user requested
+
+		downloader.DownloadAllTools(cwd)
+		toolCacheLocation, err := cache.GetToolCacheLocation()
+
+		if err != nil {
+			logger.Error(err)
+		}
+
+		exec.Cmd()
 	},
 }
 
