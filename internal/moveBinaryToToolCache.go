@@ -12,13 +12,11 @@ import (
 // Given info about a specific tool that's been successfully downloaded
 // and extracted, updates its chmod permissions and moves it to the correct
 // cache location
-func MoveBinaryToToolCache(toolName string, toolVersion string, binaryPath string) (string, error) {
+func MoveBinaryToToolCache(toolName, toolVersion, binaryPath string) (string, error) {
 	logger.Info(fmt.Sprintf("Updating %s execution permissions...", binaryPath))
 	if err := os.Chmod(binaryPath, 0755); err != nil {
 		return "", err
 	}
-
-	filenamePrefix := fmt.Sprintf("%s-v%s", toolName, toolVersion)
 
 	// great, we didn't blow up, so now we need
 	// to simplify the extraction folder
@@ -26,7 +24,8 @@ func MoveBinaryToToolCache(toolName string, toolVersion string, binaryPath strin
 	if err != nil {
 		return "", err
 	}
-	extractionLocation := filepath.Join(toolCacheLocation, filenamePrefix, toolName)
+
+	extractionLocation := cache.GetToolCacheLocationForTool(toolCacheLocation, toolName, toolVersion)
 
 	if err := os.MkdirAll(filepath.Dir(extractionLocation), os.ModePerm); err != nil {
 		return "", err
@@ -36,7 +35,7 @@ func MoveBinaryToToolCache(toolName string, toolVersion string, binaryPath strin
 		return "", err
 	}
 
-	logger.Info(fmt.Sprintf("%s is cached locally at %s", filenamePrefix, extractionLocation))
+	logger.Info(fmt.Sprintf("%s %s is cached locally at %s", toolName, toolVersion, extractionLocation))
 
 	return extractionLocation, nil
 }

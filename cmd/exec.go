@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"fmt"
-	"os/exec"
+	"strings"
 
 	"github.com/benduran/glipglop/cache"
 	"github.com/benduran/glipglop/downloader"
+	"github.com/benduran/glipglop/internal"
 	logger "github.com/benduran/glipglop/log"
+	"github.com/benduran/glipglop/schema"
 	"github.com/spf13/cobra"
 )
 
@@ -17,21 +19,36 @@ var execCmd = &cobra.Command{
 	Long: `Want to run a Node.js or Python script, start a Java application, or something similar
 against your project's specific language or tool requirement? Use exec`,
 	Run: func(cmd *cobra.Command, args []string) {
-		tool := args[0]
+		fmt.Println(args)
+		tool := strings.TrimSpace(args[0])
 		argsForTool := args[1:]
-		logger.Info(fmt.Sprintf("Executing a command %s with args %s", tool, argsForTool))
-		cwd, _ := rootCmd.Flags().GetString("cwd")
+		cwd, _ := internal.GetCWD()
+		logger.Info(fmt.Sprintf("Executing a command %s with args %s in %s", tool, argsForTool, cwd))
 
-		// check if the tool the user requested
-
-		downloader.DownloadAllTools(cwd)
-		toolCacheLocation, err := cache.GetToolCacheLocation()
+		// the downloader will only download the missing bits
+		err := downloader.DownloadAllTools(cwd)
 
 		if err != nil {
 			logger.Error(err)
+			return
 		}
 
-		exec.Cmd()
+		manifest, err := schema.ReadUserSchema(cwd)
+
+		if err != nil {
+			logger.Error(err)
+			return
+		}
+
+		toolManifestEntry := manifest.Tools[tool]
+		fmt.Println(toolManifestEntry)
+
+		toolBinaryPath := cache.CheckBinaryInToolCache(tool, toolManifestEntry)
+
+		if len(toolBinaryPath) == 0 {
+			logger.Error(fmt.Errorf("unable to use %s because you don't have it declared in your glipglop.json manifest", tool))
+			return
+		}
 	},
 }
 

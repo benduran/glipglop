@@ -1,6 +1,7 @@
 package cache
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 )
@@ -52,4 +53,31 @@ func GetExtractedCacheLocation() (string, error) {
 	}
 
 	return extractedLocation, nil
+}
+
+// shortcut for getting a formatted folder that holds the tool binary
+func GetToolCacheLocationForTool(toolCacheLocation, toolName, toolVersion string) string {
+	filenamePrefix := fmt.Sprintf("%s-v%s", toolName, toolVersion)
+
+	return filepath.Join(toolCacheLocation, filenamePrefix, toolName)
+}
+
+// checks if a specific tool version already exists in the tools cache.
+// if it does, that path is returned.
+// otherwise, an empty string is returned
+func CheckBinaryInToolCache(toolName, toolVersion string) string {
+	toolCacheLocation, err := GetToolCacheLocation()
+
+	if err != nil {
+		return ""
+	}
+
+	toolLocation := GetToolCacheLocationForTool(toolCacheLocation, toolName, toolVersion)
+
+	stat, err := os.Stat(toolLocation)
+	if err != nil || stat.IsDir() {
+		return ""
+	}
+
+	return toolLocation
 }

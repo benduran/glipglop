@@ -1,9 +1,7 @@
 package cmd
 
 import (
-	"os"
-	"path/filepath"
-
+	"github.com/benduran/glipglop/internal"
 	logger "github.com/benduran/glipglop/log"
 	"github.com/spf13/cobra"
 )
@@ -14,13 +12,12 @@ var rootCmd = &cobra.Command{
 	Long: `Tired of using nvm, pynev, jabba, sdkman, and all those other language-specific tools for managing your various, installed tool versions?
 Glipglop brings this all under a single roof and allows you to use them with ease.`,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		// transform the CWD flag, regardless of what it is, to an absolute path
-		cwd, _ := cmd.Flags().GetString("cwd")
+		// if we can't determine the CWD, glipglop is totally boned, so just abort early
+		_, err := internal.GetCWD()
 
-		cwd, _ = filepath.Abs(cwd)
-
-		cmd.Flags().Set("cwd", cwd)
-
+		if err != nil {
+			return err
+		}
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
@@ -30,13 +27,6 @@ Glipglop brings this all under a single roof and allows you to use them with eas
 }
 
 func SetupCLI() {
-	cwd, err := os.Getwd()
-	if err != nil {
-		logger.Error(err)
-	}
-
-	rootCmd.PersistentFlags().String("cwd", cwd, "--cwd <path/to/dir>")
-
 	if err := rootCmd.Execute(); err != nil {
 		logger.Error(err)
 	}

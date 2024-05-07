@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/benduran/glipglop/cache"
 	"github.com/benduran/glipglop/internal"
 	logger "github.com/benduran/glipglop/log"
 )
@@ -16,6 +17,13 @@ func DownloadBun(version string) (string, error) {
 	// mac ARM64 format:  https://github.com/oven-sh/bun/releases/download/bun-v1.1.6/bun-darwin-aarch64.zip
 	// mac ARMx64 format: https://github.com/oven-sh/bun/releases/download/bun-v1.1.6/bun-darwin-x64.zip
 	// windows format:    https://github.com/oven-sh/bun/releases/download/bun-v1.1.6/bun-windows-x64.zip
+
+	// if the tool is already in the cache, just return the path to that immediately
+	existingPathToTool := cache.CheckBinaryInToolCache("bun", version)
+
+	if len(existingPathToTool) > 0 {
+		return existingPathToTool, nil
+	}
 
 	machineInfo := internal.GetMachineInfo()
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 
+	"github.com/benduran/glipglop/cache"
 	"github.com/benduran/glipglop/internal"
 	logger "github.com/benduran/glipglop/log"
 )
@@ -15,6 +16,13 @@ func DownloadNode(version string) (string, error) {
 	// linux format: https://nodejs.org/dist/v20.12.0/node-v20.12.0-linux-x64.tar.xz
 	// mac format: https://nodejs.org/dist/v20.12.0/node-v20.12.0-darwin-arm64.tar.gz
 	// windows format: https://nodejs.org/dist/v20.12.0/node-v20.12.0-win-x64.zip
+
+	// if the tool is already in the cache, just return the path to that immediately
+	existingPathToTool := cache.CheckBinaryInToolCache("node", version)
+
+	if len(existingPathToTool) > 0 {
+		return existingPathToTool, nil
+	}
 
 	machineInfo := internal.GetMachineInfo()
 
