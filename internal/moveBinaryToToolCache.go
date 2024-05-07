@@ -26,7 +26,7 @@ func MoveBinaryToToolCache(toolName string, toolVersion string, binaryPath strin
 	if err != nil {
 		return "", err
 	}
-	extractionLocation := filepath.Join(toolCacheLocation, filenamePrefix, "node")
+	extractionLocation := filepath.Join(toolCacheLocation, filenamePrefix, toolName)
 
 	if err := os.MkdirAll(filepath.Dir(extractionLocation), os.ModePerm); err != nil {
 		return "", err
