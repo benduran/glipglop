@@ -2,10 +2,8 @@ package downloader
 
 import (
 	"fmt"
-	"os"
 	"path/filepath"
 
-	"github.com/benduran/glipglop/cache"
 	"github.com/benduran/glipglop/internal"
 	logger "github.com/benduran/glipglop/log"
 )
@@ -84,28 +82,5 @@ func DownloadNode(version string) (string, error) {
 	nodeBinary := matches[0]
 
 	logger.Info(fmt.Sprintf("Found the node binary to be %s", nodeBinary))
-	logger.Info("Updating its execution permissions...")
-	if err = os.Chmod(nodeBinary, 0755); err != nil {
-		return "", err
-	}
-
-	// great, we didn't blow up, so now we need
-	// to simplify the extraction folder
-	toolCacheLocation, err := cache.GetToolCacheLocation()
-	if err != nil {
-		return "", err
-	}
-	extractionLocation := filepath.Join(toolCacheLocation, filenamePrefix, "node")
-
-	if err := os.MkdirAll(filepath.Dir(extractionLocation), os.ModePerm); err != nil {
-		return "", err
-	}
-
-	if err := os.Rename(nodeBinary, extractionLocation); err != nil {
-		return "", err
-	}
-
-	logger.Info(fmt.Sprintf("%s is cached locally at %s", filenamePrefix, extractionLocation))
-
-	return extractionLocation, nil
+	return internal.MoveBinaryToToolCache("node", version, nodeBinary)
 }
