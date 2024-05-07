@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/benduran/glipglop/cache"
 	"github.com/benduran/glipglop/internal"
 	logger "github.com/benduran/glipglop/log"
 )
@@ -44,7 +45,8 @@ func DownloadNode(version string) (string, error) {
 		arch = "arm64"
 	}
 
-	filename := fmt.Sprintf("node-v%s-%s-%s%s", version, machineInfo.OS, arch, ext)
+	filenamePrefix := fmt.Sprintf("node-v%s", version)
+	filename := fmt.Sprintf("%s-%s-%s%s", filenamePrefix, machineInfo.OS, arch, ext)
 
 	urlToDownload := fmt.Sprintf("https://nodejs.org/dist/v%s/%s", version, filename)
 
@@ -62,7 +64,12 @@ func DownloadNode(version string) (string, error) {
 	}
 
 	// find the node binary
-	nodeGlob := filepath.Join(extractedPath, "**", fmt.Sprintf("node%s", nodeBinaryExt))
+	nodeGlob := filepath.Join(extractedPath, "bin", fmt.Sprintf("node%s", nodeBinaryExt))
+
+	if machineInfo.OS == "windows" {
+		nodeGlob = filepath.Join(extractedPath, "**", "node.exe")
+	}
+
 	logger.Info(fmt.Sprintf("scanning for node binary with the following glob path: %s", nodeGlob))
 	matches, err := filepath.Glob(nodeGlob)
 
@@ -78,9 +85,27 @@ func DownloadNode(version string) (string, error) {
 
 	logger.Info(fmt.Sprintf("Found the node binary to be %s", nodeBinary))
 	logger.Info("Updating its execution permissions...")
-	if err = os.Chmod(nodeBinary, 0644); err != nil {
+	if err = os.Chmod(nodeBinary, 0755); err != nil {
 		return "", err
 	}
 
-	return nodeBinary, nil
+	// great, we didn't blow up, so now we need
+	// to simplify the extraction folder
+	toolCacheLocation, err := cache.GetToolCacheLocation()
+	if err != nil {
+		return "", err
+	}
+	extractionLocation := filepath.Join(toolCacheLocation, filenamePrefix, "node")
+
+	if err := os.MkdirAll(filepath.Dir(extractionLocation), os.ModePerm); err != nil {
+		return "", err
+	}
+
+	if err := os.Rename(nodeBinary, extractionLocation); err != nil {
+		return "", err
+	}
+
+	logger.Info(fmt.Sprintf("%s is cached locally at %s", filenamePrefix, extractionLocation))
+
+	return extractionLocation, nil
 }
