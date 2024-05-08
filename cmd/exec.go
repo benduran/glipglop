@@ -51,7 +51,7 @@ against your project's specific language or tool requirement? Use exec`,
 		existingPath := os.Getenv("PATH")
 
 		childCmd := exec.Command(tool, argsForTool...)
-		childCmd.Env = append(os.Environ(), fmt.Sprintf("PATH=%s:%s", existingPath, path))
+		childCmd.Env = append(os.Environ(), fmt.Sprintf("PATH=%s:%s", path, existingPath))
 		childCmd.Stdin = os.Stdin
 		childCmd.Stdout = os.Stdout
 		childCmd.Stderr = os.Stderr
