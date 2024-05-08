@@ -42,25 +42,21 @@ against your project's specific language or tool requirement? Use exec`,
 
 		// now we need to get the binary paths to all the tools in the cache
 		// and apply them as a path variable to a child spawned shell
-		path := os.Getenv("PATH")
+		path := ""
 		for toolName, toolVersion := range manifest.Tools {
 			binaryPath := filepath.Dir(cache.CheckBinaryInToolCache(toolName, toolVersion))
 			path += fmt.Sprintf(":%s", binaryPath)
 		}
 
-		envToUse := os.Environ()
-		for i, val := range envToUse {
-			// we found the path variable
-			if strings.Index(val, "PATH=") == 0 {
-				envToUse[i] = fmt.Sprintf("PATH=%s:%s", path, strings.Replace(val, "PATH=", "", 1))
-			}
-		}
+		existingPath := os.Getenv("PATH")
 
 		childCmd := exec.Command(tool, argsForTool...)
-		childCmd.Env = envToUse
+		childCmd.Env = append(os.Environ(), fmt.Sprintf("PATH=%s:%s", existingPath, path))
 		childCmd.Stdin = os.Stdin
 		childCmd.Stdout = os.Stdout
 		childCmd.Stderr = os.Stderr
+
+		fmt.Println(strings.Join(childCmd.Environ(), "\n"))
 
 		childErr := childCmd.Start()
 
