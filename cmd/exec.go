@@ -51,12 +51,10 @@ against your project's specific language or tool requirement? Use exec`,
 		envToUse := os.Environ()
 		for i, val := range envToUse {
 			// we found the path variable
-			if strings.Index(val, "PATH") == 0 {
-				envToUse[i] = fmt.Sprintf("PATH=%s", path)
+			if strings.Index(val, "PATH=") == 0 {
+				envToUse[i] = fmt.Sprintf("PATH=%s:%s", path, strings.Replace(val, "PATH=", "", 1))
 			}
 		}
-
-		fmt.Println(envToUse)
 
 		childCmd := exec.Command(tool, argsForTool...)
 		childCmd.Env = envToUse
