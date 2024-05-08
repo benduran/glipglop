@@ -2,6 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
 	"strings"
 
 	"github.com/benduran/glipglop/cache"
@@ -19,19 +22,10 @@ var execCmd = &cobra.Command{
 	Long: `Want to run a Node.js or Python script, start a Java application, or something similar
 against your project's specific language or tool requirement? Use exec`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println(args)
 		tool := strings.TrimSpace(args[0])
 		argsForTool := args[1:]
 		cwd, _ := internal.GetCWD()
 		logger.Info(fmt.Sprintf("Executing a command %s with args %s in %s", tool, argsForTool, cwd))
-
-		// the downloader will only download the missing bits
-		err := downloader.DownloadAllTools(cwd)
-
-		if err != nil {
-			logger.Error(err)
-			return
-		}
 
 		manifest, err := schema.ReadUserSchema(cwd)
 
@@ -40,13 +34,46 @@ against your project's specific language or tool requirement? Use exec`,
 			return
 		}
 
-		toolManifestEntry := manifest.Tools[tool]
-		fmt.Println(toolManifestEntry)
+		// the downloader will only download the missing bits
+		if err := downloader.DownloadAllTools(cwd); err != nil {
+			logger.Error(err)
+			return
+		}
 
-		toolBinaryPath := cache.CheckBinaryInToolCache(tool, toolManifestEntry)
+		// now we need to get the binary paths to all the tools in the cache
+		// and apply them as a path variable to a child spawned shell
+		path := os.Getenv("PATH")
+		for toolName, toolVersion := range manifest.Tools {
+			binaryPath := filepath.Dir(cache.CheckBinaryInToolCache(toolName, toolVersion))
+			path += fmt.Sprintf(":%s", binaryPath)
+		}
 
-		if len(toolBinaryPath) == 0 {
-			logger.Error(fmt.Errorf("unable to use %s because you don't have it declared in your glipglop.json manifest", tool))
+		envToUse := os.Environ()
+		for i, val := range envToUse {
+			// we found the path variable
+			if strings.Index(val, "PATH") == 0 {
+				envToUse[i] = fmt.Sprintf("PATH=%s", path)
+			}
+		}
+
+		fmt.Println(envToUse)
+
+		childCmd := exec.Command(tool, argsForTool...)
+		childCmd.Env = envToUse
+		childCmd.Stdin = os.Stdin
+		childCmd.Stdout = os.Stdout
+		childCmd.Stderr = os.Stderr
+
+		childErr := childCmd.Start()
+
+		if childErr != nil {
+			logger.Error(childErr)
+			return
+		}
+
+		childErr = childCmd.Wait()
+		if childErr != nil {
+			logger.Error(childErr)
 			return
 		}
 	},

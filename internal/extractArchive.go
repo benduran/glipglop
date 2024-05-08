@@ -12,6 +12,7 @@ import (
 
 	"github.com/benduran/glipglop/cache"
 	logger "github.com/benduran/glipglop/log"
+	"github.com/xi2/xz"
 )
 
 // extracts an arbitrary archive to a folder on disk
@@ -38,6 +39,8 @@ func ExtractArchive(archivePath string) (string, error) {
 	if isTar {
 		if filepath.Ext(archivePath) == ".gz" {
 			err = extractTarGz(archivePath, extractDir)
+		} else if filepath.Ext(archivePath) == ".xz" {
+			err = extractTarXz(archivePath, extractDir)
 		} else {
 			err = extractTar(archivePath, extractDir)
 		}
@@ -60,6 +63,7 @@ func ExtractArchive(archivePath string) (string, error) {
 }
 
 func extractTar(archivePath, targetPath string) error {
+	logger.Info(fmt.Sprintf("detected %s to be a regular tar archive", archivePath))
 	file, err := os.Open(archivePath)
 	if err != nil {
 		return err
@@ -105,7 +109,61 @@ func extractTar(archivePath, targetPath string) error {
 	return nil
 }
 
+func extractTarXz(archivePath, targetPath string) error {
+	logger.Info(fmt.Sprintf("detected %s to be a tar-xz archive", archivePath))
+
+	file, err := os.Open(archivePath)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+
+	r, err := xz.NewReader(file, 0)
+	if err != nil {
+		return err
+	}
+
+	tr := tar.NewReader(r)
+
+	for {
+		header, err := tr.Next()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return err
+		}
+
+		targetFilePath := filepath.Join(targetPath, header.Name)
+
+		switch header.Typeflag {
+		case tar.TypeDir:
+			// Create directory
+			err = os.MkdirAll(targetFilePath, os.ModePerm)
+			if err != nil {
+				return err
+			}
+		case tar.TypeReg:
+			// Create file
+			outFile, err := os.Create(targetFilePath)
+			if err != nil {
+				return err
+			}
+			defer outFile.Close()
+
+			// Write file contents
+			_, err = io.Copy(outFile, tr)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
 func extractTarGz(archivePath, targetPath string) error {
+	logger.Info(fmt.Sprintf("detected %s to be a tar-gz archive", archivePath))
 	file, err := os.Open(archivePath)
 	if err != nil {
 		return err
@@ -158,6 +216,7 @@ func extractTarGz(archivePath, targetPath string) error {
 }
 
 func extractZip(archivePath, targetPath string) error {
+	logger.Info(fmt.Sprintf("detected %s to be a zip archive", archivePath))
 	zipReader, err := zip.OpenReader(archivePath)
 	if err != nil {
 		return err
