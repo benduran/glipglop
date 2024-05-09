@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 
 	"github.com/benduran/glipglop/cache"
@@ -47,6 +48,10 @@ against your project's specific language or tool requirement? Use exec`,
 			binaryPath := filepath.Dir(cache.CheckBinaryInToolCache(toolName, toolVersion))
 			path += fmt.Sprintf(":%s", binaryPath)
 		}
+		// Remove leading colon if path is not empty
+		if path != "" {
+			path = path[1:]
+		}
 
 		existingPath := os.Getenv("PATH")
 
@@ -56,7 +61,10 @@ against your project's specific language or tool requirement? Use exec`,
 		childCmd.Stdout = os.Stdout
 		childCmd.Stderr = os.Stderr
 
-		fmt.Println(strings.Join(childCmd.Environ(), "\n"))
+		childEnv := childCmd.Environ()
+		sort.Strings(childEnv)
+		// uncomment this line to see the PATH set for the child process
+		// logger.Info(fmt.Sprintf("applying the following as $PATH: %s", strings.Join(childEnv, "\n")))
 
 		childErr := childCmd.Start()
 
