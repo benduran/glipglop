@@ -12,6 +12,8 @@ func DownloadTool(tool string, version string) (string, error) {
 	switch tool {
 	case "bun":
 		return DownloadBun(version)
+	case "go":
+		return DownloadGo(version)
 	case "node":
 		return DownloadNode(version)
 	default:
