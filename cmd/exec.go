@@ -5,7 +5,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sort"
 	"strings"
 
 	"github.com/benduran/glipglop/cache"
@@ -26,7 +25,7 @@ against your project's specific language or tool requirement? Use exec`,
 		tool := strings.TrimSpace(args[0])
 		argsForTool := args[1:]
 		cwd, _ := internal.GetCWD()
-		logger.Info(fmt.Sprintf("Executing a command %s with args %s in %s", tool, argsForTool, cwd))
+		logger.Debug(fmt.Sprintf("Executing a command %s with args %s in %s", tool, argsForTool, cwd))
 
 		manifest, err := schema.ReadUserSchema(cwd)
 
@@ -55,16 +54,12 @@ against your project's specific language or tool requirement? Use exec`,
 
 		existingPath := os.Getenv("PATH")
 
+		os.Setenv("PATH", fmt.Sprintf("%s:%s", path, existingPath))
+
 		childCmd := exec.Command(tool, argsForTool...)
-		childCmd.Env = append(os.Environ(), fmt.Sprintf("PATH=%s:%s", path, existingPath))
 		childCmd.Stdin = os.Stdin
 		childCmd.Stdout = os.Stdout
 		childCmd.Stderr = os.Stderr
-
-		childEnv := childCmd.Environ()
-		sort.Strings(childEnv)
-		// uncomment this line to see the PATH set for the child process
-		// logger.Info(fmt.Sprintf("applying the following as $PATH: %s", strings.Join(childEnv, "\n")))
 
 		childErr := childCmd.Start()
 

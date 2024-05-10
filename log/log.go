@@ -3,6 +3,7 @@ package logger
 import (
 	"fmt"
 	"log"
+	"os"
 	"strings"
 
 	"github.com/TwiN/go-color"
@@ -23,8 +24,34 @@ var logLevelFncMap = map[string]func(string){
 	},
 }
 
+// given the current log level being used,
+// compares it to the user's desired loglevel
+// and returns whether or not logging should occur
+func shouldLog(level string) bool {
+	desiredLevel := os.Getenv("GLIPGLOP_LEVEL")
+
+	if level == "error" {
+		return true
+	}
+	if level == "debug" && desiredLevel == "debug" {
+		return true
+	}
+	if level == "info" && (desiredLevel == "debug" || desiredLevel == "info") {
+		return true
+	}
+	if level == "warn" && (desiredLevel == "debug" || desiredLevel == "info" || desiredLevel == "warn") {
+		return true
+	}
+
+	return false
+}
+
 func printNonError(level string, msg string) {
 	prefix := fmt.Sprintf("[%s]", strings.ToUpper(level))
+
+	if !shouldLog(level) {
+		return
+	}
 
 	if level == "debug" {
 		prefix = color.With(color.Gray, prefix)

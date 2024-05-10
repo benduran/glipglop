@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"os"
+
 	"github.com/benduran/glipglop/internal"
 	logger "github.com/benduran/glipglop/log"
 	"github.com/spf13/cobra"
@@ -18,6 +20,15 @@ Glipglop brings this all under a single roof and allows you to use them with eas
 		if err != nil {
 			return err
 		}
+
+		logLevel, _ := cmd.PersistentFlags().GetString("log-level")
+
+		if len(logLevel) == 0 {
+			logLevel = "info"
+		}
+
+		os.Setenv("GLIPGLOP_LEVEL", logLevel)
+
 		return nil
 	},
 	Run: func(cmd *cobra.Command, args []string) {
@@ -27,6 +38,7 @@ Glipglop brings this all under a single roof and allows you to use them with eas
 }
 
 func SetupCLI() {
+	rootCmd.PersistentFlags().String("log-level", "Determines the log verbosity.", "info")
 	if err := rootCmd.Execute(); err != nil {
 		logger.Error(err)
 	}
