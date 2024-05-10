@@ -58,7 +58,7 @@ func DownloadBun(version string) (string, error) {
 	}
 
 	// now we need to extract the archive
-	extractedPath, err := internal.ExtractArchive(downloadPath)
+	extractedPath, err := internal.ExtractArchive("bun", version, downloadPath)
 
 	if err != nil {
 		return "", err

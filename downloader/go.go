@@ -55,7 +55,7 @@ func DownloadGo(version string) (string, error) {
 	}
 
 	// now we need to extract the archive
-	extractedPath, err := internal.ExtractArchive(downloadPath)
+	extractedPath, err := internal.ExtractArchive("go", version, downloadPath)
 
 	if err != nil {
 		return "", err
