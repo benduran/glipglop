@@ -18,7 +18,7 @@ func DownloadGo(version string) (string, error) {
 	// windows format: https://go.dev/dl/go1.22.3.windows-amd64.zip
 
 	// if the tool is already in the cache, just return the path to that immediately
-	existingPathToTool := cache.CheckBinaryInToolCache("node", version)
+	existingPathToTool := cache.CheckBinaryInToolCache("go", version)
 
 	if len(existingPathToTool) > 0 {
 		return existingPathToTool, nil
@@ -62,7 +62,7 @@ func DownloadGo(version string) (string, error) {
 	}
 
 	// find the node binary
-	goGlob := filepath.Join(extractedPath, "bin", fmt.Sprintf("go%s", goBinaryExt))
+	goGlob := filepath.Join(extractedPath, "go", "bin", fmt.Sprintf("go%s", goBinaryExt))
 
 	logger.Info(fmt.Sprintf("scanning for go binary with the following glob path: %s", goGlob))
 	matches, err := filepath.Glob(goGlob)
@@ -75,8 +75,10 @@ func DownloadGo(version string) (string, error) {
 		return "", fmt.Errorf("no matching go binary was found in %s", extractedPath)
 	}
 
-	nodeBinary := matches[0]
+	goBinary := matches[0]
 
-	logger.Info(fmt.Sprintf("Found the go binary to be %s", nodeBinary))
-	return internal.MoveBinaryToToolCache("go", version, nodeBinary)
+	logger.Info(fmt.Sprintf("Found the go binary to be %s", goBinary))
+
+	// TODO: Is this right? is there only one binary file included in the go archive?
+	return internal.MoveFolderToToolCache("go", version, filepath.Join(extractedPath, "go"), []string{goBinary})
 }

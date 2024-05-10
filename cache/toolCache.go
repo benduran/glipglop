@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	logger "github.com/benduran/glipglop/log"
 )
 
 // Gets glipglop's tool cache location,
@@ -74,10 +76,18 @@ func CheckBinaryInToolCache(toolName, toolVersion string) string {
 
 	toolLocation := GetToolCacheLocationForTool(toolCacheLocation, toolName, toolVersion)
 
+	// need to have a bunch of special cases for the various different versions of tools
+	switch toolName {
+	case "go":
+		toolLocation = filepath.Join(toolLocation, "bin", "go")
+	}
+
 	stat, err := os.Stat(toolLocation)
 	if err != nil || stat.IsDir() {
 		return ""
 	}
+
+	logger.Info(fmt.Sprintf("found %s location to be %s", toolName, toolLocation))
 
 	return toolLocation
 }
