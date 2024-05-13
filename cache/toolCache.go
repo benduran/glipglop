@@ -87,7 +87,7 @@ func CheckBinaryInToolCache(toolName, toolVersion string) string {
 		return ""
 	}
 
-	logger.Info(fmt.Sprintf("found %s location to be %s", toolName, toolLocation))
+	logger.Debug(fmt.Sprintf("found %s location to be %s", toolName, toolLocation))
 
 	return toolLocation
 }
