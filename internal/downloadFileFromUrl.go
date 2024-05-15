@@ -9,6 +9,7 @@ import (
 
 	"github.com/benduran/glipglop/cache"
 	logger "github.com/benduran/glipglop/log"
+	"github.com/schollz/progressbar/v3"
 )
 
 // Given a URL path to a file, downloads it
@@ -28,39 +29,43 @@ func DownloadFileFromURL(url string) (string, error) {
 	_, err = os.Stat(downloadPath)
 
 	if err == nil {
-		logger.Info(fmt.Sprintf("%s already exists. Skipping download!", downloadPath))
+		logger.Debug(fmt.Sprintf("%s already exists. Skipping download!", downloadPath))
 		return downloadPath, nil
 	}
 
-	logger.Info(fmt.Sprintf("Downloading %s to %s", url, downloadPath))
+	logger.Debug(fmt.Sprintf("Downloading %s to %s", url, downloadPath))
 
-	res, err := http.Get(url)
-
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return "", err
 	}
-	defer res.Body.Close()
 
-	if res.StatusCode != 200 {
-		// there was an error of some kind when downloading,
-		// so 100% do not try to write a file
-		return "", fmt.Errorf("%s returned a non-okay status code of %d", url, res.StatusCode)
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", nil
 	}
 
-	f, err := os.Create(downloadPath)
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		// there was an error of some kind when downloading,
+		// so 100% do not try to write a file
+		return "", fmt.Errorf("%s returned a non-okay status code of %d", url, resp.StatusCode)
+	}
+
+	f, err := os.OpenFile(downloadPath, os.O_CREATE|os.O_WRONLY, 0644)
+
 	if err != nil {
 		return "", err
 	}
 
 	defer f.Close()
 
-	_, err = io.Copy(f, res.Body)
+	bar := progressbar.DefaultBytes(resp.ContentLength, fmt.Sprintf("downloading %s", url))
 
-	if err != nil {
-		return "", err
-	}
+	io.Copy(io.MultiWriter(f, bar), resp.Body)
 
-	logger.Info(fmt.Sprintf("Downloaded %s to %s", url, downloadPath))
+	logger.Debug(fmt.Sprintf("Downloaded %s to %s", url, downloadPath))
 
 	return downloadPath, nil
 }

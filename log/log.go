@@ -30,6 +30,10 @@ var logLevelFncMap = map[string]func(string){
 func shouldLog(level string) bool {
 	desiredLevel := os.Getenv("GLIPGLOP_LEVEL")
 
+	if len(desiredLevel) == 0 {
+		desiredLevel = "info"
+	}
+
 	if level == "error" {
 		return true
 	}

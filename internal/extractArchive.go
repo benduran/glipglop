@@ -16,7 +16,7 @@ import (
 )
 
 // extracts an arbitrary archive to a folder on disk
-func ExtractArchive(archivePath string) (string, error) {
+func ExtractArchive(toolName, toolVersion, archivePath string) (string, error) {
 	logger.Info(fmt.Sprintf("Extracting %s", archivePath))
 	// Check if the archive path exists
 	_, err := os.Stat(archivePath)
@@ -28,6 +28,8 @@ func ExtractArchive(archivePath string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	extractDir = filepath.Join(extractDir, fmt.Sprintf("%s-%s", toolName, toolVersion))
 
 	// Determine the archive type based on the file extension
 	endsWithTar, _ := regexp.Compile(`\.(tar)(\.(gz|xz))$`)
@@ -54,12 +56,13 @@ func ExtractArchive(archivePath string) (string, error) {
 		return "", err
 	}
 
-	sansExt := endsWithTar.ReplaceAllString(filepath.Base(archivePath), "")
-	sansExt = endsWithZip.ReplaceAllString(sansExt, "")
+	return extractDir, nil
+	// sansExt := endsWithTar.ReplaceAllString(filepath.Base(archivePath), "")
+	// sansExt = endsWithZip.ReplaceAllString(sansExt, "")
 
-	logger.Info(fmt.Sprintf("Successfully extracted %s to %s", archivePath, extractDir))
+	// logger.Info(fmt.Sprintf("Successfully extracted %s to %s", archivePath, extractDir))
 
-	return filepath.Join(extractDir, sansExt), nil
+	// return filepath.Join(extractDir, sansExt), nil
 }
 
 func extractTar(archivePath, targetPath string) error {
@@ -92,6 +95,10 @@ func extractTar(archivePath, targetPath string) error {
 			}
 		case tar.TypeReg:
 			// Create file
+			err := os.MkdirAll(filepath.Dir(targetFilePath), os.ModePerm)
+			if err != nil {
+				return err
+			}
 			outFile, err := os.Create(targetFilePath)
 			if err != nil {
 				return err
@@ -145,6 +152,10 @@ func extractTarXz(archivePath, targetPath string) error {
 			}
 		case tar.TypeReg:
 			// Create file
+			err := os.MkdirAll(filepath.Dir(targetFilePath), os.ModePerm)
+			if err != nil {
+				return err
+			}
 			outFile, err := os.Create(targetFilePath)
 			if err != nil {
 				return err
@@ -198,6 +209,11 @@ func extractTarGz(archivePath, targetPath string) error {
 			}
 		case tar.TypeReg:
 			// Create file
+			err := os.MkdirAll(filepath.Dir(targetFilePath), os.ModePerm)
+			if err != nil {
+				return err
+			}
+
 			outFile, err := os.Create(targetFilePath)
 			if err != nil {
 				return err
@@ -236,6 +252,11 @@ func extractZip(archivePath, targetPath string) error {
 		}
 
 		// Create file
+		err := os.MkdirAll(filepath.Dir(targetFilePath), os.ModePerm)
+		if err != nil {
+			return err
+		}
+
 		outFile, err := os.Create(targetFilePath)
 		if err != nil {
 			return err

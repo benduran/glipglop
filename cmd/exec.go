@@ -54,7 +54,9 @@ against your project's specific language or tool requirement? Use exec`,
 
 		existingPath := os.Getenv("PATH")
 
-		os.Setenv("PATH", fmt.Sprintf("%s:%s", path, existingPath))
+		newPath := fmt.Sprintf("%s:%s", path, existingPath)
+		logger.Debug(fmt.Sprintf("Setting child process $PATH to %s", newPath))
+		os.Setenv("PATH", newPath)
 
 		childCmd := exec.Command(tool, argsForTool...)
 		childCmd.Stdin = os.Stdin
