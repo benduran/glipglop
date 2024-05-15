@@ -65,7 +65,7 @@ func DownloadBun(version string) (string, error) {
 	}
 
 	// find the bun
-	bunGlob := filepath.Join(extractedPath, fmt.Sprintf("bun%s", bunBinaryExt))
+	bunGlob := filepath.Join(extractedPath, "*", fmt.Sprintf("bun%s", bunBinaryExt))
 
 	logger.Info(fmt.Sprintf("scanning for bun binary with the following glob path: %s", bunGlob))
 	matches, err := filepath.Glob(bunGlob)

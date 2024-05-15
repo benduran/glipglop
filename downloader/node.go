@@ -70,7 +70,7 @@ func DownloadNode(version string) (string, error) {
 	}
 
 	// find the node binary
-	nodeGlob := filepath.Join(extractedPath, "bin", fmt.Sprintf("node%s", nodeBinaryExt))
+	nodeGlob := filepath.Join(extractedPath, "*", "bin", fmt.Sprintf("node%s", nodeBinaryExt))
 
 	if machineInfo.OS == "windows" {
 		nodeGlob = filepath.Join(extractedPath, "**", "node.exe")
