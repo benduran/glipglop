@@ -32,10 +32,10 @@ func DownloadDeno(version string) (string, error) {
 	}
 
 	ext := ".zip"
-	bunBinaryExt := ""
+	denoBinaryExt := ""
 
 	if machineInfo.OS == "windows" {
-		bunBinaryExt = ".exe"
+		denoBinaryExt = ".exe"
 	}
 
 	arch := ""
@@ -71,8 +71,8 @@ func DownloadDeno(version string) (string, error) {
 		return "", err
 	}
 
-	// find the bun
-	denoGlob := filepath.Join(extractedPath, fmt.Sprintf("deno%s", bunBinaryExt))
+	// find deno
+	denoGlob := filepath.Join(extractedPath, fmt.Sprintf("deno%s", denoBinaryExt))
 
 	logger.Info(fmt.Sprintf("scanning for deno binary with the following glob path: %s", denoGlob))
 	matches, err := filepath.Glob(denoGlob)
@@ -85,8 +85,8 @@ func DownloadDeno(version string) (string, error) {
 		return "", fmt.Errorf("no matching deno binary was found in %s", extractedPath)
 	}
 
-	bunBinary := matches[0]
+	denoBinary := matches[0]
 
-	logger.Info(fmt.Sprintf("Found the deno binary to be %s", bunBinary))
-	return internal.MoveBinaryToToolCache("deno", version, bunBinary)
+	logger.Info(fmt.Sprintf("Found the deno binary to be %s", denoBinary))
+	return internal.MoveBinaryToToolCache("deno", version, denoBinary)
 }
