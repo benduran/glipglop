@@ -10,6 +10,8 @@ import (
 // Downloads a specific tool
 func DownloadTool(tool string, version string) (string, error) {
 	switch tool {
+	case "azul-java":
+		return DownloadAzulJava(version)
 	case "bun":
 		return DownloadBun(version)
 	case "deno":

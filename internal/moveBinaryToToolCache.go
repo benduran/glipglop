@@ -66,7 +66,13 @@ func MoveFolderToToolCache(toolName, toolVersion, toolFolderPath string, binarie
 	}
 
 	logger.Info(fmt.Sprintf("Moving %s to %s", toolFolderPath, extractionLocation))
+	if err := os.MkdirAll(extractionLocation, os.ModePerm); err != nil {
+		logger.Info("FART ONE")
+		return "", err
+	}
+
 	if err := os.Rename(toolFolderPath, extractionLocation); err != nil {
+		logger.Info("FART TWO")
 		return "", err
 	}
 
