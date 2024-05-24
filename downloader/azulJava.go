@@ -30,6 +30,8 @@ type JavaVersionInfo struct {
 func fetchJavaVersionInfo(version string, machineInfo *internal.MachineInfo) ([]JavaVersionInfo, error) {
 	arch := ""
 
+	fmt.Println(machineInfo)
+
 	if machineInfo.Arch == "x64" {
 		arch = "amd64"
 	} else {
@@ -44,7 +46,9 @@ func fetchJavaVersionInfo(version string, machineInfo *internal.MachineInfo) ([]
 		os = machineInfo.OS
 	}
 
-	response, err := http.Get(fmt.Sprintf("https://api.azul.com/metadata/v1/zulu/packages?java_version=%s&os=%s&arch=%s&archive_type=zip&java_package_type=jdk&javafx_bundled=false&latest=true&release_status=ga&availability_types=CA&certifications=tck", version, os, arch))
+	javaUrl := fmt.Sprintf("https://api.azul.com/metadata/v1/zulu/packages?java_version=%s&os=%s&arch=%s&archive_type=zip&java_package_type=jdk&javafx_bundled=false&latest=true&release_status=ga&availability_types=CA&certifications=tck", version, os, arch)
+	logger.Info(fmt.Sprintf("fetching java from %s", javaUrl))
+	response, err := http.Get(javaUrl)
 	if err != nil {
 		return nil, err
 	}
@@ -96,6 +100,10 @@ func DownloadAzulJava(version string) (string, error) {
 		return "", err
 	}
 
+	if len(infos) == 0 {
+		return "", fmt.Errorf("unable to download azul-java because no version matches your os + arch combo of %s:%s", machineInfo.OS, machineInfo.Arch)
+	}
+
 	// the first entry is the only one we want
 	info := infos[0]
 
@@ -142,5 +150,11 @@ func DownloadAzulJava(version string) (string, error) {
 		return "", err
 	}
 
-	return internal.MoveFolderToToolCache("azul-java", version, filepath.Join(extractedPath, "azul-java"), allBinaries)
+	fuck := filepath.Join(extractedPath, "azul-java")
+
+	if _, err := os.Stat(fuck); err != nil {
+		return "", err
+	}
+
+	return internal.MoveFolderToToolCache("azul-java", version, fuck, allBinaries)
 }
