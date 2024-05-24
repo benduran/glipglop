@@ -13,10 +13,10 @@ import (
 // the user specified in their config
 // and extracts it
 func DownloadDeno(version string) (string, error) {
-	// linux format:      https://github.com/denoland/deno/releases/download/v1.43.5/denort-x86_64-unknown-linux-gnu.zip
+	// linux format:      https://github.com/denoland/deno/releases/download/v1.43.5/deno-x86_64-unknown-linux-gnu.zip
 	// mac ARM64 format:  https://github.com/denoland/deno/releases/download/v1.43.5/deno-aarch64-apple-darwin.zip
 	// mac x64 format:    https://github.com/denoland/deno/releases/download/v1.43.5/deno-x86_64-apple-darwin.zip
-	// windows format:    https://github.com/denoland/deno/releases/download/v1.43.5/denort-x86_64-pc-windows-msvc.zip
+	// windows format:    https://github.com/denoland/deno/releases/download/v1.43.5/denor-x86_64-pc-windows-msvc.zip
 
 	// if the tool is already in the cache, just return the path to that immediately
 	existingPathToTool := cache.CheckBinaryInToolCache("deno", version)
@@ -50,10 +50,10 @@ func DownloadDeno(version string) (string, error) {
 	if machineInfo.OS == "darwin" {
 		filename = fmt.Sprintf("deno-%s-apple-darwin%s", arch, ext)
 	} else if machineInfo.OS == "linux" {
-		filename = fmt.Sprintf("denort-x86_64-unknown-linux-gnu%s", ext)
+		filename = fmt.Sprintf("deno-x86_64-unknown-linux-gnu%s", ext)
 	} else {
 		// windows
-		filename = fmt.Sprintf("denort-x86_64-pc-windows-msvc%s", ext)
+		filename = fmt.Sprintf("deno-x86_64-pc-windows-msvc%s", ext)
 	}
 
 	urlToDownload := fmt.Sprintf("https://github.com/denoland/deno/releases/download/v%s/%s", version, filename)

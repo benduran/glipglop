@@ -31,7 +31,7 @@ func DownloadGo(version string) (string, error) {
 	}
 
 	arch := machineInfo.Arch
-	ext := ""
+	ext := ".tar.gz"
 	goBinaryExt := ""
 
 	switch machineInfo.OS {
@@ -40,8 +40,6 @@ func DownloadGo(version string) (string, error) {
 		goBinaryExt = ".exe"
 	case "linux":
 		arch = "386"
-	default:
-		ext = ".tar.gz"
 	}
 
 	filename := fmt.Sprintf("go%s.%s-%s%s", version, machineInfo.OS, arch, ext)
