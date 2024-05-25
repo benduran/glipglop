@@ -142,5 +142,26 @@ func DownloadAzulJava(version string) (string, error) {
 		return "", err
 	}
 
-	return internal.MoveFolderToToolCache("azul-java", version, filepath.Join(extractedPath, "azul-java"), allBinaries)
+	// the first folder in the extracted path is the folder we need to move
+	matches, err := filepath.Glob(filepath.Join(extractedPath, "*"))
+
+	if err != nil {
+		return "", err
+	}
+
+	firstFolder := ""
+
+	for _, fp := range matches {
+		stat, _ := os.Stat(fp)
+		if stat.IsDir() {
+			firstFolder = fp
+			break
+		}
+	}
+
+	if len(firstFolder) == 0 {
+		return "", fmt.Errorf("did not find any folder inside of %s that contain the azul-java contents", extractedPath)
+	}
+
+	return internal.MoveFolderToToolCache("azul-java", version, firstFolder, allBinaries)
 }
