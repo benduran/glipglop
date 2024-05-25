@@ -77,6 +77,7 @@ func DownloadGo(version string) (string, error) {
 
 	logger.Info(fmt.Sprintf("Found the go binary to be %s", goBinary))
 
-	// TODO: Is this right? is there only one binary file included in the go archive?
-	return internal.MoveFolderToToolCache("go", version, filepath.Join(extractedPath, "go"), []string{goBinary})
+	toolFolderPath := filepath.Join(extractedPath, "go")
+
+	return internal.MoveFolderToToolCache("go", version, toolFolderPath, []string{goBinary})
 }
